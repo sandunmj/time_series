@@ -13,18 +13,18 @@ warnings.filterwarnings("ignore")
 
 class TimeSeries:
 
-    def __init__(self, model, layers, units, lookbackwindow, predictwindow):
+    def __init__(self, model, layers, units, look_back, predict_step):
         self.modelname = model
         self.numlayers = layers
         self.numunits = units
-        self.feedlen = lookbackwindow
-        self.predictlen = predictwindow
+        self.feedlen = look_back
+        self.predictlen = predict_step
 
         if self.modelname == 'LSTM' or self.modelname == 'TCN':
             if self.modelname == 'LSTM':
-                self.model = self.modelLSTM()
+                self.model = self.model_lstm()
             else:
-                self.model = self.modelTCN()
+                self.model = self.model_tcn()
         else:
             raise Exception
 
@@ -36,7 +36,7 @@ class TimeSeries:
         mdl.add(LSTM(units=self.numunits, return_sequences=False, input_shape=(self.feedlen+5, 1)))
         mdl.add(Dropout(0.2))
         mdl.add(Dense(units=self.predictlen))
-        mdl.compile(optimizer='adadelta', loss='mse', metrics=['accuracy'])
+        mdl.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
         mdl.summary()
         return mdl
 
@@ -48,10 +48,10 @@ class TimeSeries:
                 nb_filters=128
                 )(i)
         o = Dense(self.predictlen)(o)
-        m = Model(inputs=[i], outputs=[o])
-        m.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
-        m.summary()
-        return m
+        mdl = Model(inputs=[i], outputs=[o])
+        mdl.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
+        mdl.summary()
+        return mdl
 
     def train_model(self, epochs, df):
 
@@ -98,7 +98,7 @@ class TimeSeries:
         #self.showHistory(hist)
         return hist
 
-    def showHistory(self, history):
+    def show_history(self, history):
 
         print(history.history.keys())
         # summarize history for accuracy
