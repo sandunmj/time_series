@@ -3,15 +3,18 @@ from time_series import TimeSeries as ts
 import pandas as pd
 import os
 import warnings
+import tensorflow as tf
+graph = tf.get_default_graph()
 warnings.filterwarnings("ignore")
 app = Flask(__name__)
 
 num_req = 0
+
 lstm = ts(model='LSTM', layers=3, units=30, look_back=12, predict_step=4)
+lstm.train_model(epochs=3, dataframe=pd.read_csv('1.csv', sep=';\t'))
 
-
-# Training the model with a dataset
-@app.route('/train', methods=['POST','GET'])
+# Training the model with a data-set
+@app.route('/train', methods=['POST', 'GET'])
 def train():
     file = request.files['file']
     with open('temp.csv', 'w+') as f:
@@ -19,21 +22,25 @@ def train():
             f.write(line.decode('utf-8'))
     df = pd.read_csv('temp.csv', delimiter=';\t', engine='python')
     os.remove('temp.csv')
-    hist = lstm.train_model(epochs=2, df=df)
-    print(lstm.modelname)
+    x_tr, y_tr = lstm.get_features(df)
+    hist = lstm.model.fit(x_tr, y_tr, epochs=3)
     return str(hist.history['acc'][-1])
 
-# Evaluation with a dataset
-@app.route('/val', methods=['POST'])
-def eval():
+# Evaluation with a data-set
+@app.route('/validate', methods=['POST', 'GET'])
+def validate():
     file = request.files['file']
-    with open('temp{num_req}.csv', 'w+') as f:
+    with open('temp_val.csv', 'w+') as f:
         for line in file.readlines():
             f.write(line.decode('utf-8'))
-    df = pd.read_csv('temp{num_req}.csv', delimiter=';\t', engine='python')
-    os.remove('temp{num_req}.csv')
-    metrics = lstm.evalModel(df=df)
-    return metrics.json() 
+    df = pd.read_csv('temp_val.csv', delimiter=';\t', engine='python')
+    os.remove('temp_val.csv')
+    x_ts, y_ts = lstm.get_features(df)
+    with graph.as_default():
+        metrics = lstm.model.evaluate(x_ts, y_ts)
+    print(metrics)
+    return str(metrics[1])
+
 
 if __name__ == '__main__':
-	app.run()
+    app.run()
