@@ -4,14 +4,15 @@ import pandas as pd
 import os
 import warnings
 import tensorflow as tf
+import json
 graph = tf.get_default_graph()
 warnings.filterwarnings("ignore")
 app = Flask(__name__)
 
 num_req = 0
 
-lstm = ts(model='LSTM', layers=3, units=30, look_back=12, predict_step=4)
-lstm.train_model(epochs=3, dataframe=pd.read_csv('1.csv', sep=';\t'))
+lstm = ts(model='LSTM', layers=1, units=3, look_back=12, predict_step=4)
+history = lstm.train_model(epochs=5, dataframe=pd.read_csv('1.csv', sep=';\t'))
 
 # Training the model with a data-set
 @app.route('/train', methods=['POST', 'GET'])
@@ -24,6 +25,8 @@ def train():
     os.remove('temp.csv')
     x_tr, y_tr = lstm.get_features(df)
     hist = lstm.model.fit(x_tr, y_tr, epochs=3)
+    history.history['loss'] = history.history['loss'] + hist.history['loss']
+    history.history['acc'] = history.history['acc'] + hist.history['acc']
     return str(hist.history['acc'][-1])
 
 # Evaluation with a data-set
@@ -41,6 +44,12 @@ def validate():
     print(metrics)
     return str(metrics[1])
 
+# Return training history
+@app.route('/history', methods=['GET', 'POST'])
+def show_history():
+    print(history.history)
+    return json.dumps(history.history)
+
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=1111)

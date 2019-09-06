@@ -61,26 +61,6 @@ class TimeSeries:
         # self.showHistory(hist)
         return hist
 
-    def show_metrics(self, history):
-
-        print(history.history.keys())
-        # summarize history for accuracy
-        plt.plot(history.history['acc'])
-        # plt.plot(history.history['val_acc'])
-        plt.title('model accuracy')
-        plt.ylabel('accuracy')
-        plt.xlabel('epoch')
-        plt.legend(['train', 'test'], loc='upper left')
-        plt.show()
-        # summarize history for loss
-        plt.plot(history.history['loss'])
-        # plt.plot(history.history['val_loss'])
-        plt.title('model loss')
-        plt.ylabel('loss')
-        plt.xlabel('epoch')
-        plt.legend(['train', 'test'], loc='upper left')
-        plt.show()
-
     def get_features(self, df):
         df['Timestamp'] = pd.to_datetime(df['Timestamp [ms]'], unit='s')
         df.apply(pd.to_numeric, errors='ignore')
