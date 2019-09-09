@@ -11,8 +11,10 @@ app = Flask(__name__)
 
 num_req = 0
 
-lstm = ts(model='LSTM', layers=1, units=3, look_back=12, predict_step=4)
-history = lstm.train_model(epochs=5, dataframe=pd.read_csv('1.csv', sep=';\t'))
+lstm = ts(model='TCN', layers=3, units=30, look_back=15, predict_step=6)
+df_in = pd.read_csv('/home/sandun/Desktop/2013/21.csv')
+history = lstm.train_model(epochs=20, data_frame=df_in)
+
 
 # Training the model with a data-set
 @app.route('/train', methods=['POST', 'GET'])
