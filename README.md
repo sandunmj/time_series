@@ -1,7 +1,7 @@
 # Deployment
 The below diagram shows the complete architecture of the system.
 #
-![](archiDiagram(2).png)
+![](Diagram.png)
 
 
 The deployment should be done for each part as follows. 
