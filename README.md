@@ -14,7 +14,8 @@ Note: Unless specified, each command execution should be successfully finished b
 ## 1. AWS Instance and  Cloudwatch Configuration
 
 The already available metrics are visible in Cloudwatch under metrics category. By default, it does not provide memory utilization metric. Therefore, we have to push memory utilization data from EC2 instance to cloudwatch. Steps are given below.
-Note: Your IAM role must be permitted to use the push-metric-data for this task.
+
+***Note: Your IAM role must be permitted to use the push-metric-data and get-metric-data APIs for this task.***
 
 * Log into the EC2 instance.
 * Install the dependencies by executing below commands.
@@ -55,7 +56,7 @@ sudo nano crontab
 ```
 */5 * * * * /opt/aws-scripts-mon/mon-put-instance-data.pl --mem-used-incl-cache-buff --mem-util --disk-space-util --disk-path=/ --from-cron
 ```
-Now the pushing custom metrics part is complete. To make sure the completion, log into the Cloudwatch console and check whether the custom metrics are shown in Metrics > All Metrics > Linux System
+To ensure that you have successfully pushed the custom metrics into Cloudwatch, log into the Cloudwatch console and check whether the custom metrics are shown in Metrics > All Metrics > Linux System.
 
 ## 2. Deploying ML  Engine
 The deployment can be done in the same instance which is monitored or in another dedicated instance. If the deployment is done in the same instance, configuring AWS is not required as it is already configured. If dedicated instance is used, configuration should be done as follows.
