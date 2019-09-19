@@ -1,5 +1,5 @@
 # Deployment
-Deployemnet should be done in 3 platforms.
+Deployment should be done in 3 platforms.
 * AWS Instance and Cloudwatch Configuration
 * ML Engine Deployment
 * Client Side Deployment
