@@ -54,7 +54,7 @@ sudo nano crontab
 ```
 Now the pushing custom metrics part is complete. To make sure the completion, log into the Cloudwatch console and check whether the custom metrics are shown in Metrics > All Metrics > Linux System
 
-## Deploying ML  Engine
+## 2. Deploying ML  Engine
 The deployment can be done in the same instance which is monitored or in another dedicated instance. If the deployment is done in the same instance, configuring AWS is not required as it is already configured. If dedicated instance is used, configuration should be done as follows.
 Follow this to install the AWS CLI on linux.
 After the installation, configure the AWS CLI by executing below command and providing credentials. Enter ‘json’ as the output format. 
@@ -102,7 +102,7 @@ sh engine.sh
 Server side deployment is done.
 
 
-## Client Side Deployement
+## 3. Client Side Deployement
 
 
 Below API requests can be used as a client. 
