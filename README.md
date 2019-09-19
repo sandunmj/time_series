@@ -1,5 +1,8 @@
 # Deployment
-The below diagram shows the complete architecture of the system.
+Deployemnet should be done in 3 platforms.
+* AWS Instance and Cloudwatch Configuration
+* ML Engine Deployment
+* Client Side Deployment
 #
 ![](Diagram.png)
 
