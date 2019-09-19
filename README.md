@@ -11,7 +11,7 @@ The deployment should be done for each part as follows.
 
 Note: Unless specified, each command execution should be successfully finished before executing the next command. 
 
-## 1. AWS Instance and  Cloudwatch
+## 1. AWS Instance and  Cloudwatch Configuration
 
 The already available metrics are visible in Cloudwatch under metrics category. By default, it does not provide memory utilization metric. Therefore, we have to push memory utilization data from EC2 instance to cloudwatch. Steps are given below.
 Note: Your IAM role must be permitted to use the push-metric-data for this task.
