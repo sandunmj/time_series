@@ -1,11 +1,10 @@
-from flask import Flask, jsonify, request
+from flask import Flask
 from time_series import TimeSeries as ts
 import pandas as pd
-import matplotlib.pyplot as plt
-import os
 import warnings
 import tensorflow as tf
 import json
+
 graph = tf.get_default_graph()
 warnings.filterwarnings("ignore")
 app = Flask(__name__)
