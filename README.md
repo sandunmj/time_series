@@ -1,3 +1,7 @@
+# Architecture
+
+![](aDiagram.png)
+
 # Deployment
 Deployment should be done in 3 platforms.
 * AWS Instance and Cloudwatch Configuration

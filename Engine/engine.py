@@ -1,16 +1,17 @@
 from flask import Flask
-from time_series import TimeSeries as ts
 import pandas as pd
 import warnings
 import tensorflow as tf
 import json
+from time_series import TimeSeries
+
 
 graph = tf.get_default_graph()
 warnings.filterwarnings("ignore")
 app = Flask(__name__)
 
 
-tcnModel = ts(model='TCN', layers=3, units=30, look_back=15, predict_step=6)
+tcnModel = TimeSeries(model='TCN', layers=3, units=30, look_back=15, predict_step=6)
 # lstmModel = ts(model='LSTM', layers=3, units=30, look_back=15, predict_step=6)
 df_in = pd.read_csv('/home/sandun/Desktop/2013/21.csv')
 history = tcnModel.train_model(epochs=10, data_frame=df_in)
