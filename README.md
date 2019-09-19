@@ -81,7 +81,7 @@ python3 -m pip install --user --upgrade pip
 ```
 python3 -m pip install --user virtualenv
 ```
-* Create a new vitrtual environment.
+* Create a new virtual environment.
 ```
 python3 -m venv env
 ```
