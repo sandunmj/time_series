@@ -10,7 +10,6 @@ graph = tf.get_default_graph()
 warnings.filterwarnings("ignore")
 app = Flask(__name__)
 
-num_req = 0
 
 tcnModel = ts(model='TCN', layers=3, units=30, look_back=15, predict_step=6)
 # lstmModel = ts(model='LSTM', layers=3, units=30, look_back=15, predict_step=6)

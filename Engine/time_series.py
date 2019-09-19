@@ -4,6 +4,7 @@ from tcn import TCN
 import pandas as pd
 import numpy as np
 from sklearn import model_selection
+import pywt
 import warnings
 warnings.filterwarnings("ignore")
 

@@ -4,7 +4,7 @@ import requests
 import numpy as np
 
 
-url_compare = 'http://127.0.0.1:1111/compare'
+url_compare = 'http://52.15.69.21:80/compare'
 req_compare = requests.get(url_compare)
 
 true, predict = req_compare.json()['true'], req_compare.json()['predict']
