@@ -105,7 +105,7 @@ sh engine.sh
 Server side deployment is done.
 
 
-## 3. Client Side Deployement
+## 3. Client Side Deployment
 
 
 Below API requests can be used as a client. 
