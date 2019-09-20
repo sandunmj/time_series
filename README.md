@@ -1,12 +1,12 @@
 # Architecture
-The intention of this project is the early notification about system overloading (excedding the maximum allocated CPU utilization) of cloud instances. The cloud vendor which was targeted here is AWS for now. 
+The intention of this project is the early notification about system overloading (exceeding the maximum allocated CPU utilization) of cloud instances. The cloud vendor which was targeted here is AWS for now. 
 
 The complete architecture of the system is shown in the below diagram.
 
 
 ![](aDiagram.png)
 
-As shown in the diagram, the ML engine gets data from AWS Cloudwatch and trains itself. The predictions are then sent to the client. Also the clinet can train a model, get predictions and model scores by API requests.
+As shown in the diagram, the ML engine gets data from AWS Cloudwatch and trains itself. The predictions are then sent to the client. Also the client can train a model, get predictions and model scores by API requests.
 
 ## 1. AWS Instance
 
@@ -20,7 +20,7 @@ AWS lets the customers to observe performance metrics of their instances using C
 3. Network Input
 4. Network Output
 
-Cloudwatch supports 1,3 and 4 of these metrics to be aquired by default using get-metric-data API request. For the memory utlization data, we need to push that metric from AWS instance to Cloudwatch using push-metric-data API.
+Cloudwatch supports 1,3 and 4 of these metrics to be acquired by default using get-metric-data API request. For the memory utlization data, we need to push that metric from AWS instance to Cloudwatch using push-metric-data API.
 
 Note: The metric values are recorded in Cloudwatch with 5 minute intervals by default. If ‘Detailed Monitoring’ is enabled for the instance, metric data can be recorded with 1 minute intervals. For this system, ‘Detailed Monitoring’ is not required.
 
@@ -71,10 +71,10 @@ Also the client can use APIs for below tasks.
 * Get the most recent predictions
     * A json response is received which can be  visualised with a python code.
 * Get the predictions for a dataset.
-    * The dataset should be aquired from Cloudwatch. The json response from cloudwatch can be forwarded to the ML engine to get predictions.
+    * The data-set should be acquired from Cloudwatch. The json response from cloudwatch can be forwarded to the ML engine to get predictions.
 * Get the model scores
     * A json response is received which can be visualised by a python code. 
-* Test one of three models with a dataset and get the scores. 
+* Test one of three models with a data-set and get the scores. 
     * A json response is received
 
 
