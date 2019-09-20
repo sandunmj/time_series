@@ -1,6 +1,82 @@
 # Architecture
+The intention of this project is the early notification about system overloading (excedding the maximum allocated CPU utilization) of cloud instances. The cloud vendor which was targeted here is AWS for now. 
+
+The complete architecture of the system is shown in the below diagram.
+
 
 ![](aDiagram.png)
+
+As shown in the diagram, the ML engine gets data from AWS Cloudwatch and trains itself. The predictions are then sent to the client. Also the clinet can train a model, get predictions and model scores by API requests.
+
+## 1. AWS Instance
+
+The AWS instances should be monitored and auto-sacled accordingly to ensure that the allocated resource are fully optimized and not exceeded. This is done by monitoring their performance metrics. 
+
+## 2. Cloudwatch
+
+AWS lets the customers to observe performance metrics of their instances using Cloudwatch. For the prediction system, below metrics are required.
+1. CPU utilization
+2. Memory utilization
+3. Network Input
+4. Network Output
+
+Cloudwatch supports 1,3 and 4 of these metrics to be aquired by default using get-metric-data API request. For the memory utlization data, we need to push that metric from AWS instance to Cloudwatch using push-metric-data API.
+
+Note: The metric values are recorded in Cloudwatch with 5 minute intervals by default. If ‘Detailed Monitoring’ is enabled for the instance, metric data can be recorded with 1 minute intervals. For this system, ‘Detailed Monitoring’ is not required.
+
+A json response containing metric data is received for the get-metric-data API request. 
+
+## 3. Machine Learning Engine
+
+The diagram shows the main components, processes and the flow of the ML engine. 
+
+* A crontab command runs with below executions at regular intervals. 
+    * Call get-metric-data API and get the json response
+    * json response is converted to a Pandas dataframe
+    * Updates a CSV with the dataframe
+
+* Three ML models are built at the initialization. 
+    * LSTM model
+        * Hyper-parameters
+    * TCN model
+        * Hyper-parameters
+    * ARIMA model
+        * Hyper-parameters
+
+
+* The data in CSV is read and preprocessed to get the numpy arrays which are the inputs to the ML models.
+    * Pre-processing Steps
+        * Data Cleaning
+            * Filling non-values
+        * Features Generated
+            * Feature list
+
+        * Scaling and reshaping
+
+* The three models are trained at the same regular interval with the new data.
+
+* Predictions for the next fixed period and the model scores with new training are stored to the disk.
+    * Model Scores
+        * MAPE Accuracy
+        * Callback
+
+* The predictions with best model scores will be emailed to the client as a plot. Mailing interval can be configured.
+
+* A flask app runs to expose APIs for client side requests.
+
+4. Client Side
+
+Client receives emails with the regular intervals as mentioned above. 
+Also the client can use APIs for below tasks.
+* Get the most recent predictions
+    * A json response is received which can be  visualised with a python code.
+* Get the predictions for a dataset.
+    * The dataset should be aquired from Cloudwatch. The json response from cloudwatch can be forwarded to the ML engine to get predictions.
+* Get the model scores
+    * A json response is received which can be visualised by a python code. 
+* Test one of three models with a dataset and get the scores. 
+    * A json response is received
+
 
 # Deployment
 Deployment should be done in 3 platforms.
@@ -8,7 +84,7 @@ Deployment should be done in 3 platforms.
 * ML Engine Deployment
 * Client Side Deployment
 #
-![](Diagram.png)
+![](dDiagram.png)
 
 
 The deployment should be done for each part as follows. 

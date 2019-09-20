@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-feedlen = 11
+FEED_LEN = 11
 df = pd.read_csv('/home/sandun/Desktop/2013/21.csv')
 df_new = pd.DataFrame()
 # df_new['CPU usage [%]'] = df['CPU usage [%]']
