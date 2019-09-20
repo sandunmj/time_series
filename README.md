@@ -64,7 +64,7 @@ The diagram shows the main components, processes and the flow of the ML engine.
 
 * A flask app runs to expose APIs for client side requests.
 
-4. Client Side
+## 4. Client Side
 
 Client receives emails with the regular intervals as mentioned above. 
 Also the client can use APIs for below tasks.
