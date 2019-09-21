@@ -1,8 +1,0 @@
-{
-    "file": open('1.csv', 'rb'),
-    "model_type":"LSTM",
-    "num_layers":3,
-    "num_units":25,
-    "look_back":12,
-    "look_future":4
-}

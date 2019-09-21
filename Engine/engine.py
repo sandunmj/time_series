@@ -2,65 +2,102 @@ from flask import Flask
 import pandas as pd
 import warnings
 import tensorflow as tf
-import json
 from time_series import TimeSeries
-
-
+import json
+from mailing import mail
+import time
+from multiprocessing import Process
 graph = tf.get_default_graph()
 warnings.filterwarnings("ignore")
-app = Flask(__name__)
 
 
-tcnModel = TimeSeries(model='TCN', layers=3, units=30, look_back=15, predict_step=6)
-# lstmModel = ts(model='LSTM', layers=3, units=30, look_back=15, predict_step=6)
-df_in = pd.read_csv('/home/sandun/Desktop/2013/21.csv')
-history = tcnModel.train_model(epochs=10, data_frame=df_in)
-
-prediction, true = tcnModel.actual_vs_predict(df_in)
+def write_history(arg):
+    with open('results.json', 'w+') as file:
+        file.write(json.dumps({"history": arg.history}))
 
 
-# Training the model with a data-set
-# @app.route('/train', methods=['POST', 'GET'])
-# def train():
-#     file = request.files['file']
-#     with open('temp.csv', 'w+') as f:
-#         for line in file.readlines():
-#             f.write(line.decode('utf-8'))
-#     df = pd.read_csv('temp.csv', delimiter=';\t', engine='python')
-#     os.remove('temp.csv')
-#     x_tr, y_tr = lstm.get_features(df)
-#     hist = lstm.model.fit(x_tr, y_tr, epochs=3)
-#     history.history['loss'] = history.history['loss'] + hist.history['loss']
-#     history.history['acc'] = history.history['acc'] + hist.history['acc']
-#     return str(hist.history['acc'][-1])
+def read_history():
+    with open('results.json', 'r+') as file:
+        file = file.read()
+        return json.loads(file)["history"]
 
-# Evaluation with a data-set
-# @app.route('/validate', methods=['POST', 'GET'])
-# def validate():
-#     file = request.files['file']
-#     with open('temp_val.csv', 'w+') as f:
-#         for line in file.readlines():
-#             f.write(line.decode('utf-8'))
-#     df = pd.read_csv('temp_val.csv', delimiter=';\t', engine='python')
-#     os.remove('temp_val.csv')
-#     x_ts, y_ts = lstm.get_features(df)
-#     with graph.as_default():
-#         metrics = lstm.model.evaluate(x_ts, y_ts)
-#     print(metrics)
-#     return str(metrics[1])
 
-# Return training history
-@app.route('/history', methods=['GET', 'POST'])
-def show_history():
-    print(history.history)
-    return json.dumps(history.history)
+def write_prediction(arg):
+    with open('results.json', 'w+') as file:
+        file.write(json.dumps({"prediction": arg}))
 
-# Return training history
-@app.route('/compare', methods=['GET', 'POST'])
-def compare():
-    temp = {'true': true.tolist(), 'predict': prediction.tolist()}
-    return json.dumps(temp)
+
+with open('config.json', 'r+') as f:
+    f = json.loads(f.read())
+    MAIL_INTERVAL = f['MAIL_INTERVAL']
+    TRAIN_INTERVAL = f['TRAIN_INTERVAL']
+    PREDICT_INTERVAL = f['PREDICT_INTERVAL']
+    TO_ADDRESS = f['TO_ADDRESS']
+    MODEL = f['MODEL']
+
+
+def engine_func():
+    model = TimeSeries(model=MODEL)
+    df_in = pd.read_csv('data.csv')
+    history = model.train_model(dataframe=df_in, epochs=1)
+    write_history(history)
+
+    # Write predictions and scores to disk
+
+    mail_interval = int(time.time())
+    train_interval = int(time.time())
+    predict_interval = int(time.time())
+    prediction = "not_predicted_yet"
+    idle_status = False
+
+    while True:
+        time_now = int(time.time())
+
+        if time_now - predict_interval >= PREDICT_INTERVAL:
+            idle_status = False
+            print("Predicting ...")
+            # prediction = model.model.predict()
+            prediction = 'sample_prediction'
+            predict_interval = int(time.time())
+            print("Predicting done")
+
+        elif time_now - mail_interval >= MAIL_INTERVAL:
+            idle_status = False
+            print("Sending Email ... ")
+            status = mail(TO_ADDRESS, 'prediction')
+            print(status)
+            mail_interval = int(time.time())
+
+        elif time_now - train_interval >= TRAIN_INTERVAL:
+            idle_status = False
+            print("Training model ....")
+            df_in = pd.read_csv('data.csv')
+            history = model.train_model(dataframe=df_in, epochs=2)
+            write_history(history)
+            train_interval = int(time.time())
+
+        else:
+            if not idle_status:
+                print("Engine Idle ...")
+                idle_status = True
+
+
+def api_func():
+    app = Flask(__name__)
+
+    # Return training history
+    @app.route('/history', methods=['GET', 'POST'])
+    def show_history():
+        return read_history()
+
+    if __name__ == '__main__':
+        app.run(port=1111)
 
 
 if __name__ == '__main__':
-    app.run(port=1111)
+    p1 = Process(target=api_func)
+    p1.start()
+    p2 = Process(target=engine_func)
+    p2.start()
+    p1.join()
+    p2.join()

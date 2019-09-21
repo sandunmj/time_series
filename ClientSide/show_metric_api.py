@@ -1,17 +1,8 @@
 import matplotlib.pyplot as plt
-import json
 import requests
 
 
 def show_metrics(history):
-    # plt.plot(history['acc'])
-    # plt.plot(history['val_acc'])
-    # plt.title('model accuracy')
-    # plt.ylabel('accuracy')
-    # plt.xlabel('epoch')
-    # plt.legend(['train', 'test'], loc='upper left')
-    # plt.savefig('Plots_LSTM/accuracy.png')
-    # plt.show()
     plt.plot(history['loss'])
     plt.plot(history['val_loss'])
     plt.title('model loss')
@@ -19,7 +10,7 @@ def show_metrics(history):
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     # plt.savefig('Plots_LSTM/loss.png')
-    plt.savefig('Plots_TCN/loss.png')
+    # plt.savefig('Plots_TCN/loss.png')
     plt.show()
     plt.plot(history['mean_absolute_percentage_error'])
     plt.title('mape_train')
@@ -27,19 +18,19 @@ def show_metrics(history):
     plt.xlabel('epoch')
     plt.ylim(0,50)
     # plt.legend(['train', 'test'], loc='upper left')
-    plt.savefig('Plots_TCN/mape_train.png')
+    # plt.savefig('Plots_TCN/mape_train.png')
     # plt.savefig('Plots_LSTM/mape_train.png')
     plt.show()
 
     plt.plot(history['val_mean_absolute_percentage_error'])
-    plt.ylim(0,200)
+    plt.ylim(0, 200)
     plt.title('mape_validation')
     plt.ylabel('mape')
     plt.xlabel('epoch')
-    plt.ylim(0,50)
+    plt.ylim(0, 50)
     # plt.legend(['train', 'test'], loc='upper left')
     # plt.savefig('Plots_LSTM/mape_validation.png')
-    plt.savefig('Plots_TCN/mape_validation.png')
+    # plt.savefig('Plots_TCN/mape_validation.png')
     plt.show()
 
 
