@@ -22,9 +22,10 @@ def read_history():
         return json.loads(file)["history"]
 
 
-def write_prediction(arg):
+def write_prediction(prd, tr):
     with open('results.json', 'w+') as file:
-        file.write(json.dumps({"prediction": arg}))
+        file.write(json.dumps({"prediction": prd}))
+        file.write(json.dumps({"true": tr}))
 
 
 with open('config.json', 'r+') as f:
@@ -38,8 +39,8 @@ with open('config.json', 'r+') as f:
 
 def engine_func():
     model = TimeSeries(model=MODEL)
-    df_in = pd.read_csv('data.csv')
-    history = model.train_model(dataframe=df_in, epochs=1)
+    df_in = pd.read_csv('/home/sandun/Desktop/RND/61.csv')
+    history = model.train_model(dataframe=df_in, epochs=10)
     write_history(history)
 
     # Write predictions and scores to disk
@@ -56,8 +57,8 @@ def engine_func():
         if time_now - predict_interval >= PREDICT_INTERVAL:
             idle_status = False
             print("Predicting ...")
-            # prediction = model.model.predict()
-            prediction = 'sample_prediction'
+            prediction, true = model.true_vs_predct(pd.read_csv('/home/sandun/Desktop/RND/61.csv'))
+            write_prediction(prediction, true)
             predict_interval = int(time.time())
             print("Predicting done")
 
@@ -71,7 +72,7 @@ def engine_func():
         elif time_now - train_interval >= TRAIN_INTERVAL:
             idle_status = False
             print("Training model ....")
-            df_in = pd.read_csv('data.csv')
+            df_in = pd.read_csv('21.csv')
             history = model.train_model(dataframe=df_in, epochs=2)
             write_history(history)
             train_interval = int(time.time())
@@ -82,12 +83,17 @@ def engine_func():
                 idle_status = True
 
 
+num_request = 0
+
+
 def api_func():
     app = Flask(__name__)
-
     # Return training history
     @app.route('/history', methods=['GET', 'POST'])
     def show_history():
+        global num_request
+        num_request += 1
+        print("Number of requests : ", num_request)
         return read_history()
 
     if __name__ == '__main__':

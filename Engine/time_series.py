@@ -6,7 +6,8 @@ import numpy as np
 from sklearn import model_selection
 import warnings
 import json
-from get_features import data
+from get_data import get_train_data, get_test_data
+import keras.backend as K
 warnings.filterwarnings("ignore")
 
 with open('config.json', 'r+') as f:
@@ -14,6 +15,14 @@ with open('config.json', 'r+') as f:
     FEED_LEN = f['FEED_LEN']
     PREDICT_LEN = f['PREDICT_LEN']
     INPUT_DIM = f['INPUT_DIM']
+
+
+def custom_loss(true, pred):
+    diff = pred - true
+    sumval = K.abs(diff) + diff
+    subval = K.abs(diff) - diff
+    subval = subval/K.max(subval)
+    return sumval*0.1 + subval*0.4
 
 
 class TimeSeries:
@@ -36,52 +45,40 @@ class TimeSeries:
         # for _ in range(self.numlayers-1):
         #     mdl.add(LSTM(units=self.numunits, return_sequences=True, input_shape=(self.feedlen+5, 1)))
         #     mdl.add(Dropout(0.2))
-        mdl.add(LSTM(units=200, return_sequences=True, input_shape=(INPUT_DIM, 1)))
-        mdl.add(Dropout(0.2))
-        mdl.add(LSTM(units=100, return_sequences=True))
-        mdl.add(Dropout(0.2))
-        mdl.add(LSTM(units=10, return_sequences=True))
-        mdl.add(Dropout(0.2))
-        mdl.add(LSTM(units=100, return_sequences=False))
-        mdl.add(Dropout(0.2))
+        mdl.add(LSTM(units=12, return_sequences=True, input_shape=(25, 5)))
+        # mdl.add(Dropout(0.2))
+        mdl.add(LSTM(units=32, return_sequences=True))
+        # mdl.add(Dropout(0.2))
+        mdl.add(LSTM(units=32, return_sequences=False))
+        # mdl.add(Dropout(0.2))
         mdl.add(Dense(units=PREDICT_LEN))
-        mdl.compile(optimizer='adam', loss='mse', metrics=['mape'])
+        mdl.compile(optimizer='adam', loss='mae')
         mdl.summary()
         return mdl
 
     def model_tcn(self):
-        i = Input(shape=(self.feedlen+3, 1))
+        i = Input(shape=(25, 5))
         o = TCN(return_sequences=False,
                 activation='relu',
                 # dropout_rate=0.2,
                 nb_filters=128
                 )(i)
-        o = Dense(self.predictlen)(o)
+        o = Dense(PREDICT_LEN)(o)
         mdl = Model(inputs=[i], outputs=[o])
-        mdl.compile(optimizer='adam', loss='mape', metrics=['accuracy', 'mape'])
+        mdl.compile(optimizer='adam', loss='mae')
         mdl.summary()
         return mdl
 
     def train_model(self, dataframe, epochs):
         # x_train, x_test, y_train, y_test = self.get_features(data_frame)
         print('Fetching data')
-        x_train, x_test, y_train, y_test = data(dataframe, 0.95)
+        x_train, x_test, y_train, y_test = get_train_data(dataframe, 0.9)
         print("Training Set: ", x_train.shape, y_train.shape)
-        hist = self.model.fit(x_train, y_train, epochs=epochs, batch_size=200, verbose=1, validation_data=(x_test, y_test))
+        hist = self.model.fit(x_train, y_train, epochs=epochs, batch_size=64, verbose=1, validation_data=(x_test, y_test))
         # self.showHistory(hist)
         return hist
 
     def actual_vs_predict(self, data_frame):
-        temp = self.get_features(data_frame, train_size=1)
-        features, true = temp[0], temp[1]
-        req_features = []
-        ret_true = []
-        for i in range(0, features.shape[0], self.predictlen):
-            req_features.append(features[i])
-            ret_true.append(true[i])
-        ret_true = np.array(ret_true).flatten()
-        req_features = np.array(req_features)
-        predictions = self.model.predict(req_features).flatten()
-        return predictions, ret_true.flatten()
-
-
+        features, true = get_test_data(data_frame)
+        predictions = self.model.predict(features).flatten()
+        return predictions, true.flatten()
