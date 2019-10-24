@@ -3,7 +3,7 @@ from email.mime.text import MIMEText
 import smtplib
 
 MY_ADDRESS = 'sandun.jayawardhana@yahoo.com'
-PASSWORD = '*******'
+PASSWORD = 'sandu1101'
 SMTP_SERVER = 'smtp.mail.yahoo.com'
 PORT = 25
 TO_ADDRESS = 'sandunmenaka@gmail.com'

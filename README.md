@@ -189,15 +189,15 @@ Server side deployment is done.
 ## 3. Client Side Deployment
 
 
-Below API requests can be used as a client. 
+Below API requests can be used as a client. Clone this Github repository to proceed.
 
 * Get the scores of the trained models. The response is a json containing model scores.
 Send a GET request to ```<server ip>:<port>/compare```
 Default port is 80 unless changed in engine.py .
+The score plots can be seen by running ```show_metric_api.py``` from client side.
 
 
 For below API requests to be sent the client should get data as a json file from Cloudwatch. For that, configure the AWS CLI as described  here. 
-Clone this Github repository.
 Enter the needed credentials in ```queries.json``` and save it.
 
 To get the dataset from Cloudwatch, send below API request.
@@ -206,8 +206,9 @@ The start time and end time can be varied accordingly.
 ```
 aws cloudwatch get-metric-data --start-time 2019-07-08T00:00:00 --end-time 2019-07-11T23:00:00 --metric-data-queries file://./queries.json >> <name>.json
 ```
-* Train a model using a dataset.
-Get the ```training_api.py``` from this repository and modify with entering the json file name and server ip address, then run.
+* Evaluate a model using a dataset.
+Get the ```validate_api.py``` from this repository and modify with entering the json file name and server ip address, then run. This will show the model scores for the particular dataset.
 
-* Get predictions for a dataset.
+* Get predictions.
 Get the ```predict_api.py``` from this repository and modify with entering the json file name and server ip address, then run.
+Or send a curl request as ``` curl -X GET <server ip>:<port>/predictions```

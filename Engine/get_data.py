@@ -12,6 +12,8 @@ with open('config.json', 'r+') as f:
     PREDICT_LEN = f['PREDICT_LEN']
 
 WINDOW_SIZE = 5
+df_min = None  # For memorising min
+df_max = None  # For memorising max
 
 
 def smooth(arr):
@@ -19,11 +21,6 @@ def smooth(arr):
     for i in range(WINDOW_SIZE, arr.shape[0]-WINDOW_SIZE):
         arr2[i] = np.max(arr[i-WINDOW_SIZE:i+WINDOW_SIZE])
     arr2 = gaussian_filter1d(arr2, sigma=2)
-    # plt.plot(arr, color='blue')
-    # plt.plot(arr2, color='red')
-    # plt.title(val)
-    # # plt.xlim(10500, 10550)
-    # plt.show()
     return arr2
 
 
@@ -45,6 +42,8 @@ def get_train_data(df, train_size=1):
     col = df_features.columns
     for column in col:
         df_features[column] = smooth(df_features[column].values).tolist()
+        plt.plot(df_features[column])
+        plt.show()
     df_features -= df_features.min()
     df_features /= df_features.max()
     # plt.imshow(df_features.corr())
@@ -121,9 +120,49 @@ def get_test_data(df):
     return features, labels
 
 
-# feature, label, tsf, tsl = get_train_data(pd.read_csv('/home/sandun/Desktop/CPU/RND/168.csv'))
-# print(feature.shape)
-# print(label.shape)
-#
-#
-#
+def get_train_data_uni(df, train_size=1):
+    global df_min, df_max
+    # df_min = df.min()
+    # df -= df_min
+    # df_max = df.max()
+    # df /= df_max
+    cpu_values = smooth(df['AWS/EC2 CPUUtilization'].values)
+    # plt.plot(df['AWS/EC2 CPUUtilization'].values, color='blue')
+    # plt.plot(cpu_values, color='red')
+    # plt.xlim(0, 300)
+    # plt.show()
+    dfn = pd.DataFrame()
+    dfn['CPU'] = list(cpu_values)
+    # dfn.to_csv('new.csv', index=False)
+    features = []
+    labels = []
+    for i in range(FEED_LEN, cpu_values.shape[0]-PREDICT_LEN):
+        features.append(cpu_values[i-FEED_LEN:i])
+        labels.append(cpu_values[i:i+PREDICT_LEN])
+    features = np.array(features)
+    labels = np.array(labels)
+    features = features.reshape(features.shape[0], features.shape[1], 1)
+    # return features
+    x_ts, y_ts = np.array([None]), np.array([None])
+    if train_size < 1:
+        features, labels, x_ts, y_ts = \
+            train_test_split(features, labels, train_size=train_size, shuffle=False)
+    return features, labels, x_ts, y_ts
+
+
+def get_test_data_uni(df):
+    df -= df.min()
+    df /= df.max()
+    cpu_values = smooth(df['AWS/EC2 CPUUtilization'].values)
+    features = []
+    for i in range(cpu_values.shape[0], FEED_LEN, -PREDICT_LEN):
+        features.append(cpu_values[i-FEED_LEN:i])
+    features.reverse()
+    features = np.array(features)
+    features = features.reshape(features.shape[0], features.shape[1], 1)
+    return features
+
+
+# dfr = pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv')
+# f = get_train_data_uni(dfr, 1)
+

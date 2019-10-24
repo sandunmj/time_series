@@ -6,7 +6,7 @@ import numpy as np
 from sklearn import model_selection
 import warnings
 import json
-from get_data import get_train_data, get_test_data
+from get_data import get_train_data, get_test_data, get_train_data_uni, get_test_data_uni
 import keras.backend as K
 warnings.filterwarnings("ignore")
 
@@ -45,19 +45,19 @@ class TimeSeries:
         # for _ in range(self.numlayers-1):
         #     mdl.add(LSTM(units=self.numunits, return_sequences=True, input_shape=(self.feedlen+5, 1)))
         #     mdl.add(Dropout(0.2))
-        mdl.add(LSTM(units=12, return_sequences=True, input_shape=(25, 5)))
+        mdl.add(LSTM(units=12, return_sequences=True, input_shape=(FEED_LEN, 1)))
         # mdl.add(Dropout(0.2))
         mdl.add(LSTM(units=32, return_sequences=True))
         # mdl.add(Dropout(0.2))
         mdl.add(LSTM(units=32, return_sequences=False))
         # mdl.add(Dropout(0.2))
         mdl.add(Dense(units=PREDICT_LEN))
-        mdl.compile(optimizer='adam', loss='mae')
+        mdl.compile(optimizer='adam', loss='mse', metrics=['mae', 'mape'])
         mdl.summary()
         return mdl
 
     def model_tcn(self):
-        i = Input(shape=(25, 5))
+        i = Input(shape=(FEED_LEN, 1))
         o = TCN(return_sequences=False,
                 activation='relu',
                 # dropout_rate=0.2,
@@ -65,20 +65,24 @@ class TimeSeries:
                 )(i)
         o = Dense(PREDICT_LEN)(o)
         mdl = Model(inputs=[i], outputs=[o])
-        mdl.compile(optimizer='adam', loss='mae')
+        mdl.compile(optimizer='adam', loss='mse', metrics=['mae', 'mape'])
         mdl.summary()
         return mdl
 
     def train_model(self, dataframe, epochs):
         # x_train, x_test, y_train, y_test = self.get_features(data_frame)
         print('Fetching data')
-        x_train, x_test, y_train, y_test = get_train_data(dataframe, 0.9)
+        x_train, x_test, y_train, y_test = get_train_data_uni(dataframe, 0.9)
         print("Training Set: ", x_train.shape, y_train.shape)
         hist = self.model.fit(x_train, y_train, epochs=epochs, batch_size=64, verbose=1, validation_data=(x_test, y_test))
         # self.showHistory(hist)
         return hist
 
-    def actual_vs_predict(self, data_frame):
-        features, true = get_test_data(data_frame)
-        predictions = self.model.predict(features).flatten()
-        return predictions, true.flatten()
+    def get_prediction(self, data_frame):
+        features = get_test_data_uni(data_frame)
+        prediction = self.model.predict(features)
+        print(prediction[-1])
+        return prediction[-1]
+
+    def save_model(self):
+        self.model.save('model.h5')
