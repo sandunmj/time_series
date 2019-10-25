@@ -6,7 +6,7 @@
   "INPUT_DIM": 12,
   "MAIL_INTERVAL": 6000,
   "TRAIN_INTERVAL": 300,
-  "PREDICT_INTERVAL": 30,
+  "PREDICT_INTERVAL": 300,
   "TO_ADDRESS": "sandunmenaka@gmail.com",
   "MODEL" : "LSTM"
 }

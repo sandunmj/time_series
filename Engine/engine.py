@@ -65,8 +65,8 @@ with open('config.json', 'r+') as f:
 
 def engine_func():
     model = TimeSeries(model=MODEL)
-    df_in = pd.read_csv('/home/sandun/Desktop/CPU/RND/61.csv')
-    history = model.train_model(dataframe=df_in, epochs=1)
+    df_in = pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv')
+    history = model.train_model(dataframe=df_in, epochs=10)
     write_history(history)
     model.save_model()
 
@@ -84,7 +84,7 @@ def engine_func():
         if time_now - predict_interval >= PREDICT_INTERVAL:
             idle_status = False
             print("Predicting ...")
-            prediction = model.get_prediction(pd.read_csv('/home/sandun/Desktop/CPU/RND/61.csv'))
+            prediction = model.get_prediction(pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv'))
             write_prediction(prediction.tolist())
             predict_interval = int(time.time())
             print("Predicting done")
@@ -100,8 +100,8 @@ def engine_func():
         elif time_now - train_interval >= TRAIN_INTERVAL:
             idle_status = False
             print("Training model ....")
-            df_in = pd.read_csv('/home/sandun/Desktop/CPU/RND/61.csv')
-            history = model.train_model(dataframe=df_in, epochs=2)
+            df_in = pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv')
+            history = model.train_model(dataframe=df_in, epochs=1)
             write_history(history)
             model.save_model()
             train_interval = int(time.time())
