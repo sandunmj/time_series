@@ -6,7 +6,8 @@ import numpy as np
 from sklearn import model_selection
 import warnings
 import json
-from get_data import get_train_data, get_test_data, get_train_data_uni, get_test_data_uni
+# from get_data import get_train_data, get_test_data, get_train_data_uni, get_test_data_uni
+from hybridModelData import hybrid_data
 import keras.backend as K
 warnings.filterwarnings("ignore")
 
@@ -15,6 +16,7 @@ with open('config.json', 'r+') as f:
     FEED_LEN = f['FEED_LEN']
     PREDICT_LEN = f['PREDICT_LEN']
     INPUT_DIM = f['INPUT_DIM']
+    WINDOW_LEN = f['WINDOW_LEN']
 
 
 def custom_loss(true, pred):
@@ -45,7 +47,7 @@ class TimeSeries:
         # for _ in range(self.numlayers-1):
         #     mdl.add(LSTM(units=self.numunits, return_sequences=True, input_shape=(self.feedlen+5, 1)))
         #     mdl.add(Dropout(0.2))
-        mdl.add(LSTM(units=12, return_sequences=True, input_shape=(FEED_LEN, 1)))
+        mdl.add(LSTM(units=12, return_sequences=True, input_shape=(FEED_LEN, 2)))
         # mdl.add(Dropout(0.2))
         mdl.add(LSTM(units=32, return_sequences=True))
         # mdl.add(Dropout(0.2))
@@ -57,13 +59,13 @@ class TimeSeries:
         return mdl
 
     def model_tcn(self):
-        i = Input(shape=(FEED_LEN, 1))
+        i = Input(shape=(FEED_LEN, 2))
         o = TCN(return_sequences=False,
                 activation='relu',
                 # dropout_rate=0.2,
                 nb_filters=128
                 )(i)
-        o = Dense(PREDICT_LEN)(o)
+        o = Dense(WINDOW_LEN)(o)
         mdl = Model(inputs=[i], outputs=[o])
         mdl.compile(optimizer='adam', loss='mse', metrics=['mae', 'mape'])
         mdl.summary()
@@ -72,7 +74,7 @@ class TimeSeries:
     def train_model(self, dataframe, epochs):
         # x_train, x_test, y_train, y_test = self.get_features(data_frame)
         print('Fetching data')
-        x_train, x_test, y_train, y_test = get_train_data_uni(dataframe, 0.9)
+        x_train, x_test, y_train, y_test = hybrid_data(dataframe, 0.9)
         print("Training Set: ", x_train.shape, y_train.shape)
         hist = self.model.fit(x_train, y_train, epochs=epochs, batch_size=64, verbose=1, validation_data=(x_test, y_test))
         # self.showHistory(hist)

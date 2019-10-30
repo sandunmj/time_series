@@ -9,7 +9,8 @@ from mailing import mail
 import time
 from multiprocessing import Process
 import os
-from get_data import get_train_data_uni
+# from get_data import get_train_data_uni
+from hybridModelData import hybrid_data
 
 # graph = tf.get_default_graph()
 # warnings.filterwarnings("ignore")
@@ -45,7 +46,7 @@ def validate_data(f):
     os.remove('temp.csv')
     with tf.Session() as sess:
         m = load_model('model.h5')
-        tr_f, tr_l, ts_f, ts_l = get_train_data_uni(df)
+        tr_f, tr_l, ts_f, ts_l = hybrid_data(df)
         hist = m.evaluate(tr_f, tr_l)
         keys = ['mse', 'mae', 'mape']
         val = {}
