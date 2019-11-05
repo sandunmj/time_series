@@ -10,6 +10,8 @@ import json
 from hybridModelData import hybrid_data
 import keras.backend as K
 warnings.filterwarnings("ignore")
+feature_set = []
+label_set = []
 
 with open('config.json', 'r+') as f:
     f = json.loads(f.read())
@@ -71,19 +73,22 @@ class TimeSeries:
         mdl.summary()
         return mdl
 
-    def train_model(self, dataframe, epochs):
+    def train_model(self, features, labels, epochs):
+        x_train = features
+        y_train = labels
+        # global feature_set, label_set
         # x_train, x_test, y_train, y_test = self.get_features(data_frame)
-        print('Fetching data')
-        x_train, x_test, y_train, y_test = hybrid_data(dataframe, 0.9)
+        # print('Fetching data')
+        # x_train, x_test, y_train, y_test = hybrid_data(dataframe, 0.9)
+        # x_train, y_train = feature_set, label_set = hybrid_data(dataframe)
         print("Training Set: ", x_train.shape, y_train.shape)
-        hist = self.model.fit(x_train, y_train, epochs=epochs, batch_size=64, verbose=1, validation_data=(x_test, y_test))
+        hist = self.model.fit(x_train, y_train, epochs=1, batch_size=200, verbose=1)
         # self.showHistory(hist)
         return hist
 
-    def get_prediction(self, data_frame):
-        features = get_test_data_uni(data_frame)
+    def get_prediction(self, features):
+        # features, _ = hybrid_data(data_frame)
         prediction = self.model.predict(features)
-        print(prediction[-1])
         return prediction[-1]
 
     def save_model(self):

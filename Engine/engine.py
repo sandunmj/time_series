@@ -11,6 +11,8 @@ from multiprocessing import Process
 import os
 # from get_data import get_train_data_uni
 from hybridModelData import hybrid_data
+from get_metric import get_metric
+
 
 # graph = tf.get_default_graph()
 # warnings.filterwarnings("ignore")
@@ -30,12 +32,14 @@ def read_history():
 def write_prediction(prd):
     with open('predictions.json', 'w') as file:
         file.write(json.dumps({"prediction": prd}))
+    print('Predictions recorded.')
 
 
 def read_prediction():
+    print('reading predictions')
     with open('predictions.json', 'r+') as file:
         file = file.read()
-        return json.loads(file)
+        return file
 
 
 def validate_data(f):
@@ -46,7 +50,7 @@ def validate_data(f):
     os.remove('temp.csv')
     with tf.Session() as sess:
         m = load_model('model.h5')
-        tr_f, tr_l, ts_f, ts_l = hybrid_data(df)
+        tr_f, tr_l = hybrid_data(df)
         hist = m.evaluate(tr_f, tr_l)
         keys = ['mse', 'mae', 'mape']
         val = {}
@@ -62,13 +66,23 @@ with open('config.json', 'r+') as f:
     PREDICT_INTERVAL = f['PREDICT_INTERVAL']
     TO_ADDRESS = f['TO_ADDRESS']
     MODEL = f['MODEL']
+    GET_METRIC_INTERVAL = f['GET_METRIC_INTERVAL']
+
+feature_set, label_set = [], []
 
 
 def engine_func():
-    model = TimeSeries(model=MODEL)
+
+    global feature_set, label_set
+    get_metric()
     df_in = pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv')
-    history = model.train_model(dataframe=df_in, epochs=10)
+    feature_set, label_set = hybrid_data(df_in)
+    model = TimeSeries(model=MODEL)
+    # df_in = pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv')
+    history = model.train_model(features=feature_set, labels=label_set, epochs=10)
     write_history(history)
+    prediction = model.get_prediction(feature_set)
+    write_prediction(prediction.tolist())
     model.save_model()
 
     # Write predictions and scores to disk
@@ -76,33 +90,35 @@ def engine_func():
     mail_interval = int(time.time())
     train_interval = int(time.time())
     predict_interval = int(time.time())
-    prediction = "not_predicted_yet"
+    get_metric_interval = int(time.time())
     idle_status = False
 
     while True:
         time_now = int(time.time())
 
+        if time_now - get_metric_interval >= GET_METRIC_INTERVAL:
+            get_metric()
+            feature_set, label_set = hybrid_data(df_in)
+
         if time_now - predict_interval >= PREDICT_INTERVAL:
             idle_status = False
             print("Predicting ...")
-            prediction = model.get_prediction(pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv'))
+            prediction = model.get_prediction(feature_set)
             write_prediction(prediction.tolist())
             predict_interval = int(time.time())
-            print("Predicting done")
 
         elif time_now - mail_interval >= MAIL_INTERVAL:
             idle_status = False
             print("Sending Email ... ")
-            prediction = read_prediction()
-            status = mail(TO_ADDRESS, prediction)
+            status = mail(TO_ADDRESS, read_prediction())
             print(status)
             mail_interval = int(time.time())
 
         elif time_now - train_interval >= TRAIN_INTERVAL:
             idle_status = False
             print("Training model ....")
-            df_in = pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv')
-            history = model.train_model(dataframe=df_in, epochs=1)
+            # df_in = pd.read_csv('/home/sandun/Desktop/CPU/RND/280.csv')
+            history = model.train_model(features=feature_set, labels=label_set, epochs=1)
             write_history(history)
             model.save_model()
             train_interval = int(time.time())

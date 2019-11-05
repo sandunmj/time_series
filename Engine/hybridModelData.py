@@ -29,7 +29,7 @@ def get_train_data_uni(df):
     return features, labels
 
 
-def hybrid_data(dfn, train_size):
+def hybrid_data(dfn):
     print('Generating input data ....')
 
     def smooth(arr):
@@ -42,6 +42,7 @@ def hybrid_data(dfn, train_size):
     f_tr, f_lb = get_train_data_uni(dfn)
     m = load_model('tcn.h5')
     next_steps = m.predict(f_tr[-1].reshape(1, FEED_LEN, 1))
+    print('Processing dataset....')
     cpu_values = dfn['AWS/EC2 CPUUtilization'].values
     cpu = np.concatenate((cpu_values, next_steps.flatten()))
 
@@ -64,6 +65,7 @@ def hybrid_data(dfn, train_size):
         temp = temp.reshape(1, PREDICT_LEN)
         label_set = np.concatenate((label_set, temp), axis=0)
 
-    X_train, x_test, Y_train, y_test = train_test_split(feature_set, label_set, train_size=train_size, shuffle=False)
+    # X_train, x_test, Y_train, y_test = train_test_split(feature_set, label_set, train_size=train_size, shuffle=False)
     print('Data generated ...')
-    return X_train, x_test, Y_train, y_test
+    # return X_train, x_test, Y_train, y_test
+    return feature_set, label_set
