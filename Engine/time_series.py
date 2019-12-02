@@ -82,7 +82,7 @@ class TimeSeries:
         # x_train, x_test, y_train, y_test = hybrid_data(dataframe, 0.9)
         # x_train, y_train = feature_set, label_set = hybrid_data(dataframe)
         print("Training Set: ", x_train.shape, y_train.shape)
-        hist = self.model.fit(x_train, y_train, epochs=1, batch_size=200, verbose=1)
+        hist = self.model.fit(x_train, y_train, epochs=epochs, batch_size=64, verbose=1)
         # self.showHistory(hist)
         return hist
 
