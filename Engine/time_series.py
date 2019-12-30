@@ -46,15 +46,12 @@ class TimeSeries:
 
     def model_lstm(self):
         mdl = Sequential()
-        # for _ in range(self.numlayers-1):
-        #     mdl.add(LSTM(units=self.numunits, return_sequences=True, input_shape=(self.feedlen+5, 1)))
-        #     mdl.add(Dropout(0.2))
-        mdl.add(LSTM(units=12, return_sequences=True, input_shape=(FEED_LEN, 2)))
-        # mdl.add(Dropout(0.2))
-        mdl.add(LSTM(units=32, return_sequences=True))
-        # mdl.add(Dropout(0.2))
+        mdl.add(LSTM(units=FEED_LEN, return_sequences=True, input_shape=(FEED_LEN, 2)))
+        mdl.add(Dropout(0.2))
+        mdl.add(LSTM(units=FEED_LEN*2, return_sequences=True))
+        mdl.add(Dropout(0.2))
         mdl.add(LSTM(units=32, return_sequences=False))
-        # mdl.add(Dropout(0.2))
+        mdl.add(Dropout(0.2))
         mdl.add(Dense(units=PREDICT_LEN))
         mdl.compile(optimizer='adam', loss='mse', metrics=['mae', 'mape'])
         mdl.summary()
